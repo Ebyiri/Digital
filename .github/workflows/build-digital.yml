@@ -1,4 +1,4 @@
-name: Package Digital Standalone EXE
+name: Build Single Portable EXE
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch: 
 
 jobs:
-  build-windows:
+  build-standalone-exe:
     runs-on: windows-latest 
 
     steps:
@@ -29,26 +29,36 @@ jobs:
     - name: Extract Jar File
       shell: bash
       run: |
-        # Use native powershell to extract the downloaded file cleanly
         powershell Expand-Archive -Path Digital.zip -DestinationPath . -Force
         mv Digital/Digital.jar .
 
-    - name: Build Standalone EXE Installer via jpackage
+    - name: Generate Portable App Image Structure
       shell: bash
       run: |
+        # Generates a native application folder structure with bundled JRE
         jpackage \
-          --type msi \
-          --dest output_installer \
-          --name "DigitalLogicSimulator" \
+          --type app-image \
+          --dest portable_dir \
+          --name "DigitalApp" \
           --input . \
           --main-jar Digital.jar \
-          --main-class de.neemann.digital.gui.Main \
-          --win-dir-chooser \
-          --win-shortcut \
-          --win-menu
+          --main-class de.neemann.digital.gui.Main
 
-    - name: Upload Standalone Installer Artifact
+    - name: Compress Everything into a Single Portable EXE
+      shell: bash
+      run: |
+        # Download warp-packer tool to fuse the directory into one binary executable
+        curl -LO https://github.com
+        
+        # Package the entire generated app directory into one standalone file
+        ./warp-packer-x86_64-windows.exe \
+          --arch windows-x64 \
+          --input_dir portable_dir/DigitalApp \
+          --exec DigitalApp.exe \
+          --output Digital.exe
+
+    - name: Upload Single Standalone EXE
       uses: actions/upload-artifact@v4
       with:
-        name: Digital-Windows-Installer
-        path: output_installer/
+        name: Standalone-Digital-EXE
+        path: Digital.exe
