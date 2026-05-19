@@ -35,10 +35,14 @@ jobs:
     - name: Generate Portable App Image Structure
       shell: bash
       run: |
-        # Generates a native application folder structure with bundled JRE
+        # Create a short root directory to bypass Windows 32000 character limits
+        mkdir -p /c/p_dir/out
+        
+        # Use an absolute short path for --dest and --temp
         jpackage \
           --type app-image \
-          --dest portable_dir \
+          --dest "C:/p_dir/out" \
+          --temp "C:/p_dir/temp" \
           --name "DigitalApp" \
           --input . \
           --main-jar Digital.jar \
@@ -47,13 +51,14 @@ jobs:
     - name: Compress Everything into a Single Portable EXE
       shell: bash
       run: |
-        # Download warp-packer tool to fuse the directory into one binary executable
+        # Download the precise Windows binary name from warp releases page
         curl -LO https://github.com
+        chmod +x windows-x64.warp-packer.exe
         
-        # Package the entire generated app directory into one standalone file
-        ./warp-packer-x86_64-windows.exe \
+        # Package the directory directly out of the short C:/p_dir path
+        ./windows-x64.warp-packer.exe \
           --arch windows-x64 \
-          --input_dir portable_dir/DigitalApp \
+          --input_dir "C:/p_dir/out/DigitalApp" \
           --exec DigitalApp.exe \
           --output Digital.exe
 
