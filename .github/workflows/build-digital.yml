@@ -19,20 +19,18 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Download Latest Digital Jar
+    - name: Download Digital Release Asset
+      uses: robinraju/release-downloader@v1.11
+      with:
+        repository: "hneemann/Digital"
+        latest: true
+        fileName: "Digital.zip"
+
+    - name: Extract Jar File
       shell: bash
       run: |
-        # Hardcoded to the definitive API URL to prevent string parsing bugs
-        LATEST_URL="https://github.com"
-        DOWNLOAD_URL=$(curl -s "$LATEST_URL" | grep "browser_download_url.*Digital.zip" | cut -d '"' -f 4)
-        
-        echo "Downloading from: $DOWNLOAD_URL"
-        curl -L -o Digital.zip "$DOWNLOAD_URL"
-        
-        # Unzip using PowerShell
+        # Use native powershell to extract the downloaded file cleanly
         powershell Expand-Archive -Path Digital.zip -DestinationPath . -Force
-        
-        # Verify and move the jar file cleanly
         mv Digital/Digital.jar .
 
     - name: Build Standalone EXE Installer via jpackage
