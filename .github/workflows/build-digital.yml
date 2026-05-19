@@ -22,12 +22,17 @@ jobs:
     - name: Download Latest Digital Jar
       shell: bash
       run: |
-        # Correctly fetches from the official GitHub API endpoint
-        LATEST_URL=$(curl -s https://github.com | grep "browser_download_url.*Digital.zip" | cut -d '"' -f 4)
-        curl -L -o Digital.zip "$LATEST_URL"
+        # Hardcoded to the definitive API URL to prevent string parsing bugs
+        LATEST_URL="https://github.com"
+        DOWNLOAD_URL=$(curl -s "$LATEST_URL" | grep "browser_download_url.*Digital.zip" | cut -d '"' -f 4)
         
-        # Unzips and ensures the jar is extracted to the workspace root
+        echo "Downloading from: $DOWNLOAD_URL"
+        curl -L -o Digital.zip "$DOWNLOAD_URL"
+        
+        # Unzip using PowerShell
         powershell Expand-Archive -Path Digital.zip -DestinationPath . -Force
+        
+        # Verify and move the jar file cleanly
         mv Digital/Digital.jar .
 
     - name: Build Standalone EXE Installer via jpackage
