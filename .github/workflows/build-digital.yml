@@ -3,11 +3,11 @@ name: Package Digital Standalone EXE
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Allows you to manually trigger the build
+  workflow_dispatch: 
 
 jobs:
   build-windows:
-    runs-on: windows-latest # Runs on a clean Windows cloud machine
+    runs-on: windows-latest 
 
     steps:
     - name: Checkout Repository
@@ -22,16 +22,17 @@ jobs:
     - name: Download Latest Digital Jar
       shell: bash
       run: |
-        # Pulls the latest release version dynamically from HNeemann's repository
+        # Correctly fetches from the official GitHub API endpoint
         LATEST_URL=$(curl -s https://github.com | grep "browser_download_url.*Digital.zip" | cut -d '"' -f 4)
         curl -L -o Digital.zip "$LATEST_URL"
-        unzip Digital.zip
+        
+        # Unzips and ensures the jar is extracted to the workspace root
+        powershell Expand-Archive -Path Digital.zip -DestinationPath . -Force
         mv Digital/Digital.jar .
 
     - name: Build Standalone EXE Installer via jpackage
       shell: bash
       run: |
-        # Creates an MSI installer/EXE package bundling a stripped-down runtime
         jpackage \
           --type msi \
           --dest output_installer \
